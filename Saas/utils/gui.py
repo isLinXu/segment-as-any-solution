@@ -195,11 +195,11 @@ class ImageSegmentationTool:
 
 
 if __name__ == '__main__':
-    input_dir = '/media/linxu/MobilePan/0-Projects/segment-as-any-solution/Saas/input_img'
-    output_dir = 'output'
+    input_dir = '/Saas/input_img'
+    output_dir = '../output'
     crop_mode = True
     model_type = 'vit_b'
     checkpath = '/media/linxu/MobilePan/0-Projects/segment-as-any-solution/Saas/sam_vit_b_01ec64.pth'
-    tool = ImageSegmentationTool(input_dir=input_dir, output_dir='output', crop_mode=crop_mode, model_type=model_type,
+    tool = ImageSegmentationTool(input_dir=input_dir, output_dir='../output', crop_mode=crop_mode, model_type=model_type,
                                  checkpath='/media/linxu/MobilePan/0-Projects/segment-as-any-solution/Saas/sam_vit_b_01ec64.pth')
     tool.run()
