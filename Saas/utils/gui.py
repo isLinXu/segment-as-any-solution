@@ -2,7 +2,7 @@ import cv2
 import os
 import numpy as np
 from typing import List, Tuple
-from segment_anything import sam_model_registry, SamPredictor
+from Saas.segment_anything import sam_model_registry, SamPredictor
 
 
 class ImageSegmentationTool:
@@ -195,11 +195,10 @@ class ImageSegmentationTool:
 
 
 if __name__ == '__main__':
-    input_dir = '/Saas/input_img'
-    output_dir = '../output'
+    input_dir = '../../data/input_img/'
+    output_dir = '../../data/output_img'
     crop_mode = True
     model_type = 'vit_b'
-    checkpath = '/media/linxu/MobilePan/0-Projects/segment-as-any-solution/Saas/sam_vit_b_01ec64.pth'
-    tool = ImageSegmentationTool(input_dir=input_dir, output_dir='../output', crop_mode=crop_mode, model_type=model_type,
-                                 checkpath='/media/linxu/MobilePan/0-Projects/segment-as-any-solution/Saas/sam_vit_b_01ec64.pth')
+    checkpath = '../../ckpts/sam_vit_b_01ec64.pth'
+    tool = ImageSegmentationTool(input_dir=input_dir, output_dir=output_dir, crop_mode=crop_mode, model_type=model_type,checkpath=checkpath)
     tool.run()
