@@ -139,7 +139,9 @@ class ImageSegmentationTool:
             self.logit_input = logits[mask_idx, :, :]
             # print('max score:', np.argmax(scores), ' select:', mask_idx)
 
+
     def run(self) -> None:
+        global current_index, input_point, input_label
         filename = self.image_files[self.current_index]
         self.filename = filename
         self.image_orign = cv2.imread(os.path.join(self.input_dir, filename))
@@ -147,51 +149,115 @@ class ImageSegmentationTool:
         image = cv2.cvtColor(self.image_orign.copy(), cv2.COLOR_BGR2RGB)
         self.selected_mask = None
         self.logit_input = None
-
+        # 循环处理每张图片
+        current_index = 0
+        input_point = []
+        input_label = []
+        input_stop = False
         while True:
-            image_display = self.image_orign.copy()
-            display_info = f'{filename} | Press s to save | Press w to predict | Press d to next image | Press a to previous image | Press space to clear | Press q to remove last point '
-            cv2.putText(image_display, display_info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2,
-                        cv2.LINE_AA)
-            for point, label in zip(self.input_point, self.input_label):
-                color = (0, 255, 0) if label == 1 else (0, 0, 255)
-                cv2.circle(image_display, tuple(point), 5, color, -1)
-            if self.selected_mask is not None:
-                color = tuple(np.random.randint(0, 256, 3).tolist())
-                selected_image = self.apply_color_mask(image_display, self.selected_mask, color)
+            filename = self.image_files[current_index]
+            image_orign = cv2.imread(os.path.join(input_dir, filename))
+            image_crop = image_orign.copy()
+            image = cv2.cvtColor(image_orign.copy(), cv2.COLOR_BGR2RGB)
+            selected_mask = None
+            logit_input = None
+            while True:
+                image_display = self.image_orign.copy()
+                display_info = f'{filename} | Press s to save | Press w to predict | Press d to next image | Press a to previous image | Press space to clear | Press q to remove last point '
+                cv2.putText(image_display, display_info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2,cv2.LINE_AA)
+                for point, label in zip(self.input_point, self.input_label):
+                    color = (0, 255, 0) if label == 1 else (0, 0, 255)
+                    cv2.circle(image_display, tuple(point), 5, color, -1)
+                if self.selected_mask is not None:
+                    color = tuple(np.random.randint(0, 256, 3).tolist())
+                    selected_image = self.apply_color_mask(image_display, self.selected_mask, color)
 
-            cv2.imshow("image", image_display)
+                cv2.imshow("image", image_display)
 
-            key = cv2.waitKey(1) & 0xFF
+                key = cv2.waitKey(1) & 0xFF
 
-            if key == ord(" "):
-                self.input_point = []
-                self.input_label = []
-                self.selected_mask = None
-                self.logit_input = None
-            elif key == ord("w"):
-                if len(self.input_point) > 0 and len(self.input_label) > 0:
-                    self.predict_mask(image)
-            elif key == ord('a'):
-                self.current_index = max(0, self.current_index - 1)
-                self.input_point = []
-                self.input_label = []
+                if key == ord(" "):
+                    input_point = []
+                    input_label = []
+                    selected_mask = None
+                    logit_input = None
+                elif key == ord("w"):
+                    if len(self.input_point) > 0 and len(self.input_label) > 0:
+                        self.predict_mask(image)
+                elif key == ord('a'):
+                    current_index = max(0, current_index - 1)
+                    input_point = []
+                    input_label = []
+                    break
+                elif key == ord('d'):
+                    current_index = min(len(self.image_files) - 1, current_index + 1)
+                    input_point = []
+                    input_label = []
+                    break
+                elif key == 27:
+                    break
+                elif key == ord('q') and len(input_point) > 0:
+                    input_point.pop(-1)
+                    input_label.pop(-1)
+                elif key == ord('s') and selected_mask is not None:
+                    self.save_masked_image(image_crop, selected_mask, output_dir, filename, crop_mode_=crop_mode)
+
+            if key == 27:
                 break
-            elif key == ord('d'):
-                self.current_index = min(len(self.image_files) - 1, self.current_index + 1)
-                self.input_point = []
-                self.input_label = []
-                break
-            elif key == ord('q') and len(self.input_point) > 0:
-                self.input_point.pop(-1)
-                self.input_label.pop(-1)
-            elif key == ord('s') and self.selected_mask is not None:
-                self.save_masked_image(self.image_crop, self.selected_mask, self.filename)
-            elif key == 27:
-                break
-            elif key == ord('e'):
-                break
-        cv2.destroyAllWindows()
+
+    # def run(self) -> None:
+    #     filename = self.image_files[self.current_index]
+    #     self.filename = filename
+    #     self.image_orign = cv2.imread(os.path.join(self.input_dir, filename))
+    #     self.image_crop = self.image_orign.copy()
+    #     image = cv2.cvtColor(self.image_orign.copy(), cv2.COLOR_BGR2RGB)
+    #     self.selected_mask = None
+    #     self.logit_input = None
+    #
+    #     while True:
+    #         image_display = self.image_orign.copy()
+    #         display_info = f'{filename} | Press s to save | Press w to predict | Press d to next image | Press a to previous image | Press space to clear | Press q to remove last point '
+    #         cv2.putText(image_display, display_info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2,
+    #                     cv2.LINE_AA)
+    #         for point, label in zip(self.input_point, self.input_label):
+    #             color = (0, 255, 0) if label == 1 else (0, 0, 255)
+    #             cv2.circle(image_display, tuple(point), 5, color, -1)
+    #         if self.selected_mask is not None:
+    #             color = tuple(np.random.randint(0, 256, 3).tolist())
+    #             selected_image = self.apply_color_mask(image_display, self.selected_mask, color)
+    #
+    #         cv2.imshow("image", image_display)
+    #
+    #         key = cv2.waitKey(1) & 0xFF
+    #
+    #         if key == ord(" "):
+    #             self.input_point = []
+    #             self.input_label = []
+    #             self.selected_mask = None
+    #             self.logit_input = None
+    #         elif key == ord("w"):
+    #             if len(self.input_point) > 0 and len(self.input_label) > 0:
+    #                 self.predict_mask(image)
+    #         elif key == ord('a'):
+    #             self.current_index = max(0, self.current_index - 1)
+    #             self.input_point = []
+    #             self.input_label = []
+    #             break
+    #         elif key == ord('d'):
+    #             self.current_index = min(len(self.image_files) - 1, self.current_index + 1)
+    #             self.input_point = []
+    #             self.input_label = []
+    #             break
+    #         elif key == ord('q') and len(self.input_point) > 0:
+    #             self.input_point.pop(-1)
+    #             self.input_label.pop(-1)
+    #         elif key == ord('s') and self.selected_mask is not None:
+    #             self.save_masked_image(self.image_crop, self.selected_mask, self.filename)
+    #         elif key == 27:
+    #             break
+    #         elif key == ord('e'):
+    #             break
+    #     cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
