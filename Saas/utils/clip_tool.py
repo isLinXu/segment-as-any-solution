@@ -9,7 +9,7 @@ from Saas.utils.yaml_tool import get_classes_from_yaml
 
 
 class Clip_Predict():
-    def __init__(self, classes, debug=True):
+    def __init__(self, yaml_path, debug=True):
         '''
         :param classes:
         :param debug:
@@ -19,7 +19,8 @@ class Clip_Predict():
         self.model = model
         self.device = device
         self.preprocess = preprocess
-        self.classes = classes
+        self.yaml_path = yaml_path
+        self.classes = get_classes_from_yaml(self.yaml_path)
         self.debug = debug
 
     def predict_clip_classes(self, image):
@@ -29,7 +30,7 @@ class Clip_Predict():
         '''
         image_input = self.preprocess(image).unsqueeze(0).to(self.device)
         # 生成文字描述
-        text_inputs = torch.cat([clip.tokenize(f"This is a photo of a {c}") for c in classes]).to(self.device)
+        text_inputs = torch.cat([clip.tokenize(f"This is a photo of a {c}") for c in self.classes]).to(self.device)
 
         # 特征编码
         with torch.no_grad():
@@ -47,7 +48,7 @@ class Clip_Predict():
         print("\nTop predictions:\n")
         print('classes:{} score:{:.2f}'.format(self.classes[indices.item()], values.item()))
 
-        return classes[indices.item()], values.item()
+        return self.classes[indices.item()], values.item()
 
     def show_clip_predict(self,img):
         numpy_img = np.array(img)
@@ -68,11 +69,9 @@ class Clip_Predict():
 
 if __name__ == "__main__":
     img_path = '../../data/input_img/cat.jpg'
-
     image = Image.open(img_path)
     yaml_path = "../../data/config/coco_cls_80.yaml"
-    classes = get_classes_from_yaml(yaml_path)
-    clip_predictor = Clip_Predict(classes)
+    clip_predictor = Clip_Predict(yaml_path)
     indices_name = clip_predictor.predict_clip_classes(image)
     class_name, conf = indices_name
     print("indices_name:", indices_name)
