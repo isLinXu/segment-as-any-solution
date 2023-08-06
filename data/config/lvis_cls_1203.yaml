@@ -1,5 +1,6 @@
-
+# lvis_cls_1203.yaml
 datasets: 'lvis_cls_1203'
+nc: 1203
 classes: ['aerosol_can', 'air_conditioner', 'airplane', 'alarm_clock', 'alcohol', 'alligator', 'almond', 'ambulance',
            'amplifier', 'anklet', 'antenna', 'apple', 'applesauce',
            'apricot', 'apron', 'aquarium', 'arctic_(type_of_shoe)', 'armband', 'armchair', 'armoire', 'armor',
