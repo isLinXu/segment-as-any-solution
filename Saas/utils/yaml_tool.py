@@ -16,7 +16,7 @@ def get_classes_from_yaml(file_path):
 
 if __name__ == '__main__':
     yaml_path = "../../data/config/lvis_cls_1203.yaml"
-    classes = get_classes_from_yaml(yaml_path)  # 将'your_file.yaml'替换为你的YAML文件路径
+    classes = get_classes_from_yaml(yaml_path)
     if classes is not None:
         print(classes)
     else:
